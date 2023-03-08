@@ -7,7 +7,6 @@ router.post("/", async (req, res) => {
   const newPost = new Post(req.body);
   try {
     const savedPost = await newPost.save();
-    console.log(newPost);
     res.status(200).json(savedPost);
   } catch (err) {
     res.status(500).json(err);
@@ -65,17 +64,20 @@ router.put("/unlike-post", async (req, res) => {
 
 //Comment On A Post
 router.put("/comments", async (req, res) => {
-  const postId = req.body._id;
+  // const postId = req.body._id;
   let post;
+  // console.log(req.body._id, "This is postID");
 
   const userDetails = {
     username: req.body.username,
     photo: req.body.photo,
-    comment: req.body.comment,
+    comments: req.body.comments,
   };
 
   try {
-    post = await Post.findByIdAndUpdate(postId, {
+    post = await Post.findByIdAndUpdate({
+      _id: req.body.postId
+    }, {
       $push: { comments: userDetails },
     });
   } catch (err) {
@@ -84,6 +86,7 @@ router.put("/comments", async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Can't Comment On This Post" });
   }
+  console.log(post);
   return res.status(200).json({ message: "Successfully Commented on a Post" });
 });
 
@@ -163,13 +166,22 @@ router.get("/:id", async (req, res) => {
 //Get all the post of a single user
 router.get(`/get-post/:username`, async (req, res) => {
   const username = req.params.username;
+  let posts;
   try {
-    const posts = await Post.find({ username });
-    res.status(200).json(posts);
+    const {page = 1, limit = 10} = req.query;
+
+    posts = await Post.find({ username }).limit(limit * 1).skip(limit * (page - 1) * limit).sort({_id: -1});
   } catch (err) {
     res.status(500).json(err);
   }
+
+  if (!posts) {
+    return res.status(404).json({ message: "No posts found" });
+  }
+
+  return res.status(200).json({ posts });
 });
+
 
 //GET all posts
 //Step 1: Get username and catName from req.query.user

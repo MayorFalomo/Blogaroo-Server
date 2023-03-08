@@ -40,6 +40,7 @@ const PostSchema = new mongoose.Schema(
     profession: {
       type: String,
       required: false,
+      default: "Regular Human"
     },
   },
   { timestamps: true }
