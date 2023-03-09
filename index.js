@@ -8,10 +8,13 @@ const postRoutes = require("./routes/posts");
 const categoriesRoute = require("./routes/categories");
 const multer = require("multer");
 const path = require("path");
+const cors = require("cors");
 //This must be added to read .env files
 dotEnv.config();
 
 app.use(express.json());
+app.use(cors());
+
 
 app.use("/images", express.static(path.join(__dirname, "/images")));
 
