@@ -26,12 +26,26 @@ router.post("/register", async (req, res) => {
 //LOGIN
 router.post("/login", async (req, res) => {
   //Checking for correct username
+  let existingUser;
+
+  try {
+    existingUser = await User.findOne({ username: req.body.username });
+  } catch (error) {
+    console.log(error);
+  }
+
+  if (!existingUser) {
+    return res.status(404).json({ message: "Incorrect Credentials!" });
+  }
+
   try {
     const user = await User.findOne({ username: req.body.username });
     !user && res.status(400).json("Wrong Username!");
     //Checking for correct password
     const validated = await bcrypt.compare(req.body.password, user.password);
-    !validated && res.status(400).json("Wrong Password!");
+    if (!validated) {
+      return res.status(400).json("Wrong Password!");
+    }
 
     //password would be hidden, others can be anything but the spread operator is important
     const { password, ...others } = user._doc;
